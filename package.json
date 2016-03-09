@@ -35,6 +35,7 @@
   "homepage": "https://github.com/markelog/dbuilder",
   "dependencies": {
     "babel-polyfill": "^6.6.1",
+    "dockerode": "^2.2.9",
     "dockerode-build": "^1.1.5",
     "pump": "^1.0.1"
   },
