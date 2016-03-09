@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/markelog/dbuilder.svg?branch=master)](https://travis-ci.org/markelog/dbuilder)
-[![Coverage Status](https://coveralls.io/repos/github/markelog/dbuilder/badge.svg?branch=master&t=CdowK8)](https://coveralls.io/github/SmartCode-Europa/ServiceOrderHub?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/markelog/dbuilder/badge.svg?branch=master)](https://coveralls.io/github/markelog/dbuilder?branch=master)
 
 # Programatically build docker container
 ## Use-case
