@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/markelog/dbuilder",
   "dependencies": {
-    "babel-polyfill": "^6.6.1",
+    "babel-runtime": "^6.6.1",
     "dockerode": "^2.2.9",
     "dockerode-build": "^1.1.5",
     "pump": "^1.0.1"
@@ -43,6 +43,7 @@
     "babel-cli": "^6.6.5",
     "babel-eslint": "^5.0.0",
     "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-plugin-transform-runtime": "^6.6.0",
     "babel-preset-es2015": "^6.6.0",
     "babel-preset-stage-1": "^6.5.0",
     "babel-register": "^6.6.5",

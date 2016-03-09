@@ -1,5 +1,3 @@
-require('babel-polyfill');
-
 import { resolve } from 'path';
 import { stringify } from 'querystring';
 import { EventEmitter } from 'events';
@@ -210,7 +208,7 @@ export default class DBuilder {
           stderr: true
         }, (attachErr, stream) => {
           stream.on('data', () => resolve());
-          stream.on('data', data => this.events.emit('data', data));
+          stream.on('data', data => this.events.emit('data', data.toString()));
         });
 
         container.start(startErr => {
