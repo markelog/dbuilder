@@ -1,3 +1,5 @@
+require('babel-polyfill');
+
 import { resolve } from 'path';
 import { stringify } from 'querystring';
 import { EventEmitter } from 'events';
@@ -8,8 +10,23 @@ import Docker from 'dockerode';
 import build from 'dockerode-build';
 
 export default class DBuilder {
+  /**
+   * Promise constructor, for test stubbing
+   * @static
+   * @type {Function}
+   */
   static Promise = Promise;
+  /**
+   * dockerode-build function, for test stubbing
+   * @static
+   * @type {Function}
+   */
   static build = build;
+  /**
+   * pump function, for test stubbing
+   * @static
+   * @type {Function}
+   */
   static pump = pump;
 
   /**
