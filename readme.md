@@ -22,6 +22,7 @@ new DBuilder({
 ```js
 let builder = new DBuilder(...);
 builder.on('complete', () => {});
+builder.on('download', () => {});
 builder.on('run', () => {});
 builder.on('stopped and removed', () => {});
 builder.on('error', error => {});

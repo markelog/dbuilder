@@ -85,8 +85,9 @@ describe('DBuilder', () => {
         // Execute promise callback
         promiseStub.firstCall.args[0](resolveStub);
 
-        // Execute event callback
+        // Execute events callback
         stub.on.firstCall.args[1]();
+        stub.on.secondCall.args[1]();
 
         // Execute listContainers callback
         listContainersCb = instance.docker.listContainers.firstCall.args[1];
@@ -100,8 +101,16 @@ describe('DBuilder', () => {
         expect(stub.on).to.be.calledWith('complete');
       });
 
+      it('should add "downloadProgress" event', () => {
+        expect(stub.on).to.be.calledWith('downloadProgress');
+      });
+
       it('should emit "complete" event', () => {
         expect(instance.events.emit).to.be.calledWith('complete');
+      });
+
+      it('should emit "download" event', () => {
+        expect(instance.events.emit).to.be.calledWith('download');
       });
 
       it('should call "listContainers" method', () => {

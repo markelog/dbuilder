@@ -136,6 +136,8 @@ export default class DBuilder {
     });
 
     return new DBuilder.Promise((resolve, reject) => {
+      this.builder.on('downloadProgress', () => this.events.emit('download'));
+
       this.builder.on('complete', () => {
         this.events.emit('complete');
 
