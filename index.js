@@ -170,6 +170,7 @@ export default class DBuilder {
 
       container.stop(() => {
         container.remove(removeErr => {
+          console.log(1);
           if (removeErr) {
             this.events.emit('error', removeErr);
             reject();
