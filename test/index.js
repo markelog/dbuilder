@@ -153,30 +153,43 @@ describe('DBuilder', () => {
   });
 
   describe('DBuilder#stopAndRemove', () => {
-    let resolveStub;
-    let rejectStub;
+    beforeEach(() => {
+      sinon.stub(instance, 'stop').returns(new Promise(resolve => resolve()));
+      sinon.stub(instance, 'remove').returns(new Promise(resolve => resolve()));
+
+      return instance.stopAndRemove('test');
+    });
+
+    afterEach(() => {
+      instance.stop.restore();
+      instance.remove.restore();
+    });
+
+    it('should have call "stop" method', () => {
+      expect(instance.stop).to.have.been.calledWith('test');
+    });
+
+    it('should have call "remove" method', () => {
+      expect(instance.remove).to.have.been.calledWith('test');
+    });
+  });
+
+  describe('DBuilder#stop', () => {
     let dockerStub;
-    let promiseStub;
+    let call;
 
     beforeEach(() => {
-      promiseStub = sinon.stub(DBuilder, 'Promise');
-      resolveStub = sinon.stub();
-      rejectStub = sinon.stub();
       dockerStub = {
-        stop: sinon.stub(),
-        remove: sinon.stub()
+        stop: sinon.stub().returns(new Promise(resolve => resolve()))
       };
 
       sinon.stub(instance.docker, 'getContainer').returns(dockerStub);
 
-      instance.stopAndRemove('test');
-
-      // Execute promise callback
-      promiseStub.firstCall.args[0](resolveStub, rejectStub);
+      call = instance.stop('test');
     });
 
     afterEach(() => {
-      DBuilder.Promise.restore();
+      instance.docker.getContainer.restore();
     });
 
     it('should have call getContainer with correct argument', () => {
@@ -187,70 +200,147 @@ describe('DBuilder', () => {
       expect(dockerStub.stop).to.have.been.called;
     });
 
-    describe('dockerode "remove" method', () => {
-      let stopCb;
+    describe('success', () => {
+      let fn;
+
+      beforeEach(() => {
+        fn = dockerStub.stop.firstCall.args[0];
+      });
+
+      it('resolves promise', () => {
+        fn(null);
+        return call;
+      });
+    });
+
+    describe('error', () => {
+      let fn;
+
       beforeEach(() => {
         sinon.stub(instance.events, 'emit');
-        stopCb = dockerStub.stop.firstCall.args[0];
+        fn = dockerStub.stop.firstCall.args[0];
       });
 
       afterEach(() => {
         instance.events.emit.restore();
       });
 
-      describe('success', () => {
-        beforeEach(() => {
-          stopCb();
-          dockerStub.remove.firstCall.args[0]();
-        });
+      it('rejects promise', () => {
+        fn({});
 
-        it('should have call dockerode "remove" method', () => {
-          expect(dockerStub.remove).to.have.been.called;
-        });
-
-        it('should have emitted "stop and remove" event', () => {
-          expect(instance.events.emit).to.have.been.calledWith('stopped and removed');
-        });
-
-        it('should resolve promise', () => {
-          expect(resolveStub).to.have.been.called;
-        });
-
-        it('should emit success and resolve promise in correct order', () => {
-          expect(instance.events.emit).to.be.calledBefore(resolveStub);
-        });
-
-        it('should not emit error event', () => {
-          expect(instance.events.emit).to.not.have.been.calledWith('error');
+        return call.then(() => {
+          expect(false).to.equal(true);
+        }).catch(() => {
+          expect(true).to.equal(true);
         });
       });
 
-      describe('error', () => {
-        beforeEach(() => {
-          stopCb();
-          dockerStub.remove.firstCall.args[0]('error');
-        });
+      it('emits error', () => {
+        let object = {};
 
-        it('should reject promise', () => {
-          expect(rejectStub).to.have.been.called;
-        });
+        fn(object);
 
-        it('should emit error', () => {
-          expect(instance.events.emit).to.have.been.calledWith('error');
-        });
-
-        it('should emit error and reject promise in correct order', () => {
-          expect(instance.events.emit).to.be.calledBefore(rejectStub);
-        });
-
-        it('should not resolve, only reject', () => {
-          expect(resolveStub).to.not.been.called;
-        });
-
-        it('should emit success emit', () => {
-          expect(instance.events.emit).to.not.have.been.calledWith('stopped and removed');
+        return call.then(() => {
+          expect(false).to.equal(true);
+        }).catch(() => {
+          instance.events.emit.calledWith('error', object);
+          expect(true).to.equal(true);
         });
       });
+
+      it('resolves promise with 304 status code', () => {
+        let object = { statusCode: 304 };
+
+        fn(object);
+
+        return call;
+      });
+    });
+  });
+
+  describe('DBuilder#remove', () => {
+    let dockerStub;
+    let call;
+
+    beforeEach(() => {
+      dockerStub = {
+        remove: sinon.stub().returns(new Promise(resolve => resolve()))
+      };
+
+      sinon.stub(instance.docker, 'getContainer').returns(dockerStub);
+
+      call = instance.remove('test');
+    });
+
+    afterEach(() => {
+      instance.docker.getContainer.restore();
+    });
+
+    it('should have call getContainer with correct argument', () => {
+      expect(instance.docker.getContainer).to.have.been.calledWith('test');
+    });
+
+    it('should have call dockerode "remove" method', () => {
+      expect(dockerStub.remove).to.have.been.called;
+    });
+
+    describe('success', () => {
+      let fn;
+
+      beforeEach(() => {
+        fn = dockerStub.remove.firstCall.args[0];
+      });
+
+      it('resolves promise', () => {
+        fn(null);
+        return call;
+      });
+    });
+
+    describe('error', () => {
+      let fn;
+
+      beforeEach(() => {
+        sinon.stub(instance.events, 'emit');
+        fn = dockerStub.remove.firstCall.args[0];
+      });
+
+      afterEach(() => {
+        instance.events.emit.restore();
+      });
+
+      it('rejects promise', () => {
+        fn({});
+
+        return call.then(() => {
+          expect(false).to.equal(true);
+        }).catch(() => {
+          expect(true).to.equal(true);
+        });
+      });
+
+      it('emits error', () => {
+        let object = {};
+
+        fn(object);
+
+        return call.then(() => {
+          expect(false).to.equal(true);
+        }).catch(() => {
+          instance.events.emit.calledWith('error', object);
+          expect(true).to.equal(true);
+        });
+      });
+    });
+  });
+
+  describe('DBuilder.getId', () => {
+    it('should get id from string', () => {
+      expect(DBuilder.getId('in use by container 111.')).to.equal('111');
+    });
+
+    it('should not get id from string', () => {
+      expect(DBuilder.getId('in use by containerS 111.')).to.equal(false);
     });
   });
 
@@ -282,6 +372,7 @@ describe('DBuilder', () => {
     });
 
     afterEach(() => {
+      instance.docker.createContainer.restore();
       DBuilder.Promise.restore();
     });
 
@@ -291,6 +382,45 @@ describe('DBuilder', () => {
         name: instance.name,
         Env: instance.envs,
         PortBindings: instance.ports
+      });
+    });
+
+    describe('409 (conflict) error', () => {
+      const containerName = 1111;
+
+      beforeEach(() => {
+        sinon.stub(instance, 'stopAndRemove').returns(new Promise(resolve => resolve()));
+        sinon.stub(instance, 'run').returns(new Promise(resolve => resolve()));
+
+        createCb({
+          statusCode: 409,
+          json: `in use by container ${containerName}.`
+        });
+      });
+
+      afterEach(() => {
+        instance.stopAndRemove.restore();
+        instance.run.restore();
+      });
+
+      it('should call `stopAndRemove` method', () => {
+        expect(instance.stopAndRemove).to.have.been.calledWith(containerName.toString());
+      });
+
+      it('should call `run` method', done => {
+        // Since we need to wait for the next tick to reach `run` call
+        setTimeout(() => {
+          expect(instance.run).to.have.been.called;
+          done();
+        });
+      });
+
+      it('should throw to return promise', () => {
+        instance.run.restore();
+
+        sinon.stub(instance, 'run').throws(Error('test'));
+
+        return instance.stopAndRemove.firstCall.returnValue;
       });
     });
 

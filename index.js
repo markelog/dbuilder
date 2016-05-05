@@ -165,24 +165,78 @@ export default class DBuilder {
    * @return {Promise}
    */
   stopAndRemove(id) {
-    return new DBuilder.Promise((resolve, reject) => {
-      const container = this.docker.getContainer(id);
+    return this.stop(id).then(() => {
+      return this.remove(id).then(() => {
+        this.events.emit('stopped and removed');
+      });
+    });
+  }
 
-      container.stop(() => {
-        container.remove(removeErr => {
-          console.log(1);
-          if (removeErr) {
-            this.events.emit('error', removeErr);
-            reject();
+  /**
+   * Stop container
+   * @param {String} id - container id
+   * @return {Promise}
+   */
+  stop(id) {
+    const container = this.docker.getContainer(id);
+
+    return new Promise((resolve, reject) => {
+      container.stop(error => {
+        if (error) {
+
+          // Stopped container - don't consider this as an error
+          if (error.statusCode === 304) {
+            resolve();
             return;
           }
 
-          this.events.emit('stopped and removed');
+          this.events.emit('error', error);
+          reject();
+          return;
+        }
 
-          resolve();
-        });
+        resolve();
       });
     });
+  }
+
+  /**
+   * Remove container
+   * @param {String} id - container id
+   * @return {Promise}
+   */
+  remove(id) {
+    const container = this.docker.getContainer(id);
+
+    return new Promise((resolve, reject) => {
+      container.remove(error => {
+        if (error) {
+          this.events.emit('error', error);
+          reject();
+          return;
+        }
+
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * Get id from docker HTTP 409 error string
+   * @static
+   * @param {String} string
+   * @return {String|Boolean}
+   */
+  static getId(string) {
+    // No better way apparently :/
+    const regexp = /in use by container (\w+)\./;
+    const result = string.match(regexp);
+
+    if (result && result.length === 2) {
+      return result[1];
+    }
+
+    return false;
   }
 
   /**
@@ -198,6 +252,24 @@ export default class DBuilder {
         PortBindings: this.ports
       }, (createErr, container) => {
         if (createErr) {
+
+          // If container with the same name already exist
+          if (createErr.statusCode === 409) {
+            const id = DBuilder.getId(createErr.json);
+
+            // In case we wouldn't find anything
+            if (id) {
+
+              // Stop and remove it
+              this.stopAndRemove(id).then(() => {
+                // Then try again
+                return this.run().then(resolve);
+              }).catch(reject);
+
+              return;
+            }
+          }
+
           this.events.emit('error', createErr);
           reject();
           return;
