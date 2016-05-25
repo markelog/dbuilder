@@ -7,7 +7,7 @@ import pump from 'pump';
 import Docker from 'dockerode';
 import build from 'dockerode-build';
 
-export default class DBuilder {
+export default class DBuilder extends EventEmitter {
   /**
    * Promise constructor, for test stubbing
    * @static
@@ -37,6 +37,8 @@ export default class DBuilder {
    * @param {string} opts.image - image path
    */
   constructor(opts = {}) {
+    super();
+
     /**
      * Name of the container
      * @type {String}
@@ -85,12 +87,6 @@ export default class DBuilder {
      */
     this.builder = null;
 
-    /**
-     * EventEmitter#addEventListener bridge
-     * @type {Function}
-     */
-    this.on = this.events.on.bind(this.events);
-
     const portProtocol = `${this.exposed}/tcp`;
 
     /**
@@ -136,14 +132,14 @@ export default class DBuilder {
     });
 
     return new DBuilder.Promise((resolve, reject) => {
-      this.builder.on('downloadProgress', () => this.events.emit('download'));
+      this.builder.on('downloadProgress', () => this.emit('download'));
 
       this.builder.on('complete', () => {
-        this.events.emit('complete');
+        this.emit('complete');
 
         this.docker.listContainers({ all: true }, (listError, containers) => {
           if (listError) {
-            this.events.emit('error', listError);
+            this.emit('error', listError);
             return;
           }
 
@@ -167,7 +163,7 @@ export default class DBuilder {
   stopAndRemove(id) {
     return this.stop(id).then(() => {
       return this.remove(id).then(() => {
-        this.events.emit('stopped and removed');
+        this.emit('stopped and removed');
       });
     });
   }
@@ -190,7 +186,7 @@ export default class DBuilder {
             return;
           }
 
-          this.events.emit('error', error);
+          this.emit('error', error);
           reject();
           return;
         }
@@ -211,7 +207,7 @@ export default class DBuilder {
     return new Promise((resolve, reject) => {
       container.remove(error => {
         if (error) {
-          this.events.emit('error', error);
+          this.emit('error', error);
           reject();
           return;
         }
@@ -270,12 +266,12 @@ export default class DBuilder {
             }
           }
 
-          this.events.emit('error', createErr);
+          this.emit('error', createErr);
           reject();
           return;
         }
 
-        this.events.emit('run');
+        this.emit('run');
 
         container.attach({
           stream: true,
@@ -283,12 +279,12 @@ export default class DBuilder {
           stderr: true
         }, (attachErr, stream) => {
           stream.on('data', () => resolve());
-          stream.on('data', data => this.events.emit('data', data.toString()));
+          stream.on('data', data => this.emit('data', data.toString()));
         });
 
         container.start(startErr => {
           if (startErr) {
-            this.events.emit('error', startErr);
+            this.emit('error', startErr);
             reject();
           }
         });

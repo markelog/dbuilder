@@ -79,7 +79,7 @@ describe('DBuilder', () => {
         listContainersStub = sinon.stub();
         listContainersCb = sinon.stub();
 
-        sinon.stub(instance.events, 'emit');
+        sinon.stub(instance, 'emit');
         sinon.stub(instance.docker, 'listContainers').returns(listContainersStub);
 
         // Execute promise callback
@@ -94,7 +94,7 @@ describe('DBuilder', () => {
       });
 
       afterEach(() => {
-        instance.events.emit.restore();
+        instance.emit.restore();
       });
 
       it('should add "complete" event', () => {
@@ -106,11 +106,11 @@ describe('DBuilder', () => {
       });
 
       it('should emit "complete" event', () => {
-        expect(instance.events.emit).to.be.calledWith('complete');
+        expect(instance.emit).to.be.calledWith('complete');
       });
 
       it('should emit "download" event', () => {
-        expect(instance.events.emit).to.be.calledWith('download');
+        expect(instance.emit).to.be.calledWith('download');
       });
 
       it('should call "listContainers" method', () => {
@@ -120,13 +120,13 @@ describe('DBuilder', () => {
       it('should emit error if error is passed', () => {
         listContainersCb('error');
 
-        expect(instance.events.emit).to.be.calledWith('error');
+        expect(instance.emit).to.be.calledWith('error');
       });
 
       it('should not error if error is not passed', () => {
         listContainersCb(null, []);
 
-        expect(instance.events.emit).to.not.be.calledWith('error');
+        expect(instance.emit).to.not.be.calledWith('error');
       });
 
       it('should resolve the build promise right away', () => {
@@ -217,12 +217,12 @@ describe('DBuilder', () => {
       let fn;
 
       beforeEach(() => {
-        sinon.stub(instance.events, 'emit');
+        sinon.stub(instance, 'emit');
         fn = dockerStub.stop.firstCall.args[0];
       });
 
       afterEach(() => {
-        instance.events.emit.restore();
+        instance.emit.restore();
       });
 
       it('rejects promise', () => {
@@ -243,7 +243,7 @@ describe('DBuilder', () => {
         return call.then(() => {
           expect(false).to.equal(true);
         }).catch(() => {
-          instance.events.emit.calledWith('error', object);
+          instance.emit.calledWith('error', object);
           expect(true).to.equal(true);
         });
       });
@@ -301,12 +301,12 @@ describe('DBuilder', () => {
       let fn;
 
       beforeEach(() => {
-        sinon.stub(instance.events, 'emit');
+        sinon.stub(instance, 'emit');
         fn = dockerStub.remove.firstCall.args[0];
       });
 
       afterEach(() => {
-        instance.events.emit.restore();
+        instance.emit.restore();
       });
 
       it('rejects promise', () => {
@@ -327,7 +327,7 @@ describe('DBuilder', () => {
         return call.then(() => {
           expect(false).to.equal(true);
         }).catch(() => {
-          instance.events.emit.calledWith('error', object);
+          instance.emit.calledWith('error', object);
           expect(true).to.equal(true);
         });
       });
@@ -432,14 +432,14 @@ describe('DBuilder', () => {
           on: sinon.stub()
         };
 
-        sinon.stub(instance.events, 'emit');
+        sinon.stub(instance, 'emit');
         createCb(null, dockerStub);
         attachCb = dockerStub.attach.firstCall.args[1];
         attachCb(null, streamStub);
       });
 
       afterEach(() => {
-        instance.events.emit.restore();
+        instance.emit.restore();
       });
 
       it('should dockerode "attach" method with correct arguments', () => {
@@ -461,7 +461,7 @@ describe('DBuilder', () => {
 
       it('should emit "data" event', () => {
         streamStub.on.secondCall.args[1]('data emit');
-        expect(instance.events.emit).to.have.been.calledWith('data', 'data emit');
+        expect(instance.emit).to.have.been.calledWith('data', 'data emit');
       });
 
       describe('error at dockerode "start" method', () => {
@@ -470,7 +470,7 @@ describe('DBuilder', () => {
         });
 
         it('should dockerode "start" method for error case', () => {
-          expect(instance.events.emit).to.have.been.calledWith('error', 'bad things');
+          expect(instance.emit).to.have.been.calledWith('error', 'bad things');
         });
 
         it('should dockerode "start" method for error case', () => {
@@ -478,14 +478,14 @@ describe('DBuilder', () => {
         });
 
         it('should emit error and reject promise in correct order', () => {
-          expect(instance.events.emit).to.be.calledBefore(rejectStub);
+          expect(instance.emit).to.be.calledBefore(rejectStub);
         });
       });
     });
 
     describe('error', () => {
       beforeEach(() => {
-        sinon.stub(instance.events, 'emit');
+        sinon.stub(instance, 'emit');
         createCb('error', dockerStub);
       });
 
@@ -494,11 +494,11 @@ describe('DBuilder', () => {
       });
 
       it('should emit error', () => {
-        expect(instance.events.emit).to.have.been.calledWith('error');
+        expect(instance.emit).to.have.been.calledWith('error');
       });
 
       it('should emit error and reject promise in correct order', () => {
-        expect(instance.events.emit).to.be.calledBefore(rejectStub);
+        expect(instance.emit).to.be.calledBefore(rejectStub);
       });
 
       it('should not resolve, only reject', () => {
@@ -506,7 +506,7 @@ describe('DBuilder', () => {
       });
 
       it('should emit success emit', () => {
-        expect(instance.events.emit).to.not.have.been.calledWith('stopped and removed');
+        expect(instance.emit).to.not.have.been.calledWith('stopped and removed');
       });
     });
   });
