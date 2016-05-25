@@ -1,6 +1,6 @@
 {
   "name": "dbuilder",
-  "version": "1.0.6",
+  "version": "1.2.0",
   "description": "Programatically build docker container",
   "main": "dist/index.js",
   "scripts": {
