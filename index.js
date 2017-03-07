@@ -220,13 +220,19 @@ export default class DBuilder extends EventEmitter {
   /**
    * Get id from docker HTTP 409 error string
    * @static
-   * @param {String} string
+   * @param {String | Object} response - newest version of docker return object,
+   *                                      oldest return string
    * @return {String|Boolean}
    */
-  static getId(string) {
+  static getId(response) {
     // No better way apparently :/
     const regexp = /in use by container (\w+)\./;
-    const result = string.match(regexp);
+
+    if (typeof response === 'object') {
+      response = response.message;
+    }
+
+    const result = response.match(regexp);
 
     if (result && result.length === 2) {
       return result[1];

@@ -336,11 +336,23 @@ describe('DBuilder', () => {
 
   describe('DBuilder.getId', () => {
     it('should get id from string', () => {
-      expect(DBuilder.getId('in use by container 111.')).to.equal('111');
+      expect(DBuilder.getId('in use by container test.')).to.equal('test');
+    });
+
+    it('should get id from object', () => {
+      expect(DBuilder.getId({
+        message: 'in use by container test.'
+      })).to.equal('test');
     });
 
     it('should not get id from string', () => {
-      expect(DBuilder.getId('in use by containerS 111.')).to.equal(false);
+      expect(DBuilder.getId('in use by containerS test.')).to.equal(false);
+    });
+
+    it('should not get id from object', () => {
+      expect(DBuilder.getId({
+        message: 'in use by containerS test.'
+      })).to.equal(false);
     });
   });
 
