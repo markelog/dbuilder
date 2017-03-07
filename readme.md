@@ -1,7 +1,5 @@
-[![Build Status](https://travis-ci.org/markelog/dbuilder.svg?branch=master)](https://travis-ci.org/markelog/dbuilder)
-[![Coverage Status](https://coveralls.io/repos/github/markelog/dbuilder/badge.svg?branch=master)](https://coveralls.io/github/markelog/dbuilder?branch=master)
+# Programatically build docker container [![Build Status](https://travis-ci.org/markelog/dbuilder.svg?branch=master)](https://travis-ci.org/markelog/dbuilder) [![Coverage Status](https://coveralls.io/repos/github/markelog/dbuilder/badge.svg?branch=master)](https://coveralls.io/github/markelog/dbuilder?branch=master)
 
-# Programatically build docker container
 ## Use-case
 When you need to programatically build, create (stop and remove it if duplicate container already exist), attach and start container -
 
