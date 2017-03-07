@@ -5,7 +5,7 @@ import sinonChai from 'sinon-chai';
 import DBuilder from '../index.js';
 
 chai.use(sinonChai);
-let expect = chai.expect;
+const expect = chai.expect;
 
 describe('DBuilder', () => {
   let instance;
@@ -142,7 +142,8 @@ describe('DBuilder', () => {
       });
 
       it('should call DBuilder#stopAndRemove method', () => {
-        let promise = new Promise(() => {});
+        const promise = new Promise(() => {});
+
         sinon.stub(instance, 'stopAndRemove').returns(promise);
         listContainersCb(null, [{ Id: 'test', Image: 'test' }]);
 
@@ -236,7 +237,7 @@ describe('DBuilder', () => {
       });
 
       it('emits error', () => {
-        let object = {};
+        const object = {};
 
         fn(object);
 
@@ -249,7 +250,7 @@ describe('DBuilder', () => {
       });
 
       it('resolves promise with 304 status code', () => {
-        let object = { statusCode: 304 };
+        const object = { statusCode: 304 };
 
         fn(object);
 
@@ -320,7 +321,7 @@ describe('DBuilder', () => {
       });
 
       it('emits error', () => {
-        let object = {};
+        const object = {};
 
         fn(object);
 
@@ -419,7 +420,7 @@ describe('DBuilder', () => {
         expect(instance.stopAndRemove).to.have.been.calledWith(containerName.toString());
       });
 
-      it('should call `run` method', done => {
+      it('should call `run` method', (done) => {
         // Since we need to wait for the next tick to reach `run` call
         setTimeout(() => {
           expect(instance.run).to.have.been.called;

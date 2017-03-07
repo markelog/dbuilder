@@ -104,7 +104,7 @@ export default class DBuilder extends EventEmitter {
    * Useful for debug and when console is needed
    */
   pump() {
-    DBuilder.pump(this.builder, process.stdout, err => {
+    DBuilder.pump(this.builder, process.stdout, (err) => {
       /* eslint-disable no-console */
       if (err) {
         console.error(err);
@@ -131,7 +131,7 @@ export default class DBuilder extends EventEmitter {
       t: this.name
     });
 
-    return new DBuilder.Promise((resolve, reject) => {
+    return new DBuilder.Promise((res, reject) => {
       this.builder.on('downloadProgress', () => this.emit('download'));
 
       this.builder.on('complete', () => {
@@ -146,9 +146,9 @@ export default class DBuilder extends EventEmitter {
           const dup = containers.filter(container => container.Image === this.name)[0];
 
           if (!dup) {
-            resolve();
+            res();
           } else {
-            this.stopAndRemove(dup.Id).then(resolve, reject);
+            this.stopAndRemove(dup.Id).then(res, reject);
           }
         });
       });
@@ -176,22 +176,21 @@ export default class DBuilder extends EventEmitter {
   stop(id) {
     const container = this.docker.getContainer(id);
 
-    return new Promise((resolve, reject) => {
-      container.stop(error => {
+    return new Promise((res, rej) => {
+      container.stop((error) => {
         if (error) {
-
           // Stopped container - don't consider this as an error
           if (error.statusCode === 304) {
-            resolve();
+            res();
             return;
           }
 
           this.emit('error', error);
-          reject();
+          rej();
           return;
         }
 
-        resolve();
+        res();
       });
     });
   }
@@ -204,15 +203,15 @@ export default class DBuilder extends EventEmitter {
   remove(id) {
     const container = this.docker.getContainer(id);
 
-    return new Promise((resolve, reject) => {
-      container.remove(error => {
+    return new Promise((res, rej) => {
+      container.remove((error) => {
         if (error) {
           this.emit('error', error);
-          reject();
+          rej();
           return;
         }
 
-        resolve();
+        res();
       });
     });
   }
@@ -246,7 +245,7 @@ export default class DBuilder extends EventEmitter {
    * @return {Promise}
    */
   run() {
-    return new DBuilder.Promise((resolve, reject) => {
+    return new DBuilder.Promise((res, rej) => {
       this.docker.createContainer({
         Image: this.name,
         name: this.name,
@@ -265,15 +264,15 @@ export default class DBuilder extends EventEmitter {
               // Stop and remove it
               this.stopAndRemove(id).then(() => {
                 // Then try again
-                return this.run().then(resolve);
-              }).catch(reject);
+                return this.run().then(res);
+              }).catch(rej);
 
               return;
             }
           }
 
           this.emit('error', createErr);
-          reject();
+          rej();
           return;
         }
 
@@ -284,14 +283,14 @@ export default class DBuilder extends EventEmitter {
           stdout: true,
           stderr: true
         }, (attachErr, stream) => {
-          stream.on('data', () => resolve());
+          stream.on('data', () => res());
           stream.on('data', data => this.emit('data', data.toString()));
         });
 
-        container.start(startErr => {
+        container.start((startErr) => {
           if (startErr) {
             this.emit('error', startErr);
-            reject();
+            rej();
           }
         });
       });
